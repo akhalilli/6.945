@@ -350,16 +350,16 @@
                  (loop)))))
     answer))
 
-(define-test (example-shortest-paths)
-             (let* ((graph (clr-graph))
-                    (vertices (graph-vertices graph))
-                    (tree (shortest-path-tree (car vertices) (lambda (e) 1))))
-               (check (equal? '(0 1 1 2 2 3)
-                              (map (lambda (v)
-                                     (car (hash-table/get tree v #f)))
-                                   vertices)))
-               ;; TODO Check predecessors
-               ))
+(define (example-shortest-paths)
+  (let* ((graph (clr-graph))
+         (vertices (graph-vertices graph))
+         (tree (shortest-path-tree (car vertices) (lambda (e) 1))))
+    (produces '(0 1 1 2 2 3)
+              (map (lambda (v)
+                     (car (hash-table/get tree v #f)))
+                   vertices))
+    ;; TODO Check predecessors
+    ))
 
 (define (shortest-path source target edge-length)
   (let ((tree (shortest-path-tree source edge-length)))
@@ -380,7 +380,7 @@
       #f)))
 
 ;; TODO Separate data structure for paths?  And path trees, for that matter?
-(define-test (example-shortest-path)
+(define (example-shortest-path)
              (let* ((graph (clr-graph))
                     (vertices (graph-vertices graph))
                     (source (car vertices))
@@ -476,21 +476,20 @@
   (and (edges-ok?)
        (flow-conserved?)))
 
-(define-test (example-max-flow)
-             (interaction
-               (define graph (clr-graph))
-               (define vertices (graph-vertices graph))
-               (define source (car vertices))
-               (define target (car (last-pair vertices)))
-               (define flow (max-flow source target (lambda (e) (or (eq-get e 'capacity) 0))))
-               (check (sensible-flow? flow source target (lambda (e) (or (eq-get e 'capacity) 0))))
-               (map (lambda (edge tail)
-                      (hash-table/get flow (directed-version edge tail) 0))
-                    (graph-edges graph)
-                    (map (lambda (name)
-                           (graph-vertex graph name))
-                         '(s s v1 v1 v3 v2 v4 v3 v4)))
-               (produces '(12 11 0 12 0 11 7 19 4))))
+(define (example-max-flow)
+  (define graph (clr-graph))
+  (define vertices (graph-vertices graph))
+  (define source (car vertices))
+  (define target (car (last-pair vertices)))
+  (define flow (max-flow source target (lambda (e) (or (eq-get e 'capacity) 0))))
+  (check (sensible-flow? flow source target (lambda (e) (or (eq-get e 'capacity) 0))))
+  (produces '(12 11 0 12 0 11 7 19 4)
+            (map (lambda (edge tail)
+                   (hash-table/get flow (directed-version edge tail) 0))
+                 (graph-edges graph)
+                 (map (lambda (name)
+                        (graph-vertex graph name))
+                      '(s s v1 v1 v3 v2 v4 v3 v4)))))
 
 ;;;; Maximal bipartite matching
 
@@ -535,18 +534,16 @@
 (define (in-graph? edge graph)
   (memq edge (graph-edges graph)))
 
-(define-test (example-matching)
-             (interaction
-               (define the-graph (clr-graph2))
-               (define the-matching
-                 (maximal-bipartite-matching
-                   (map (lambda (name) (graph-vertex the-graph name)) '(l1 l2 l3 l4 l5))
-                   (map (lambda (name) (graph-vertex the-graph name)) '(r1 r2 r3 r4))
-                   (graph-edges the-graph)))
-               (check (sensible-matching? the-matching))
-               (check (apply boolean/and (map (lambda (e) (in-graph? e the-graph)) the-matching)))
-               (length the-matching)
-               (produces 3)))
+(define (example-matching)
+  (define the-graph (clr-graph2))
+  (define the-matching
+    (maximal-bipartite-matching
+      (map (lambda (name) (graph-vertex the-graph name)) '(l1 l2 l3 l4 l5))
+      (map (lambda (name) (graph-vertex the-graph name)) '(r1 r2 r3 r4))
+      (graph-edges the-graph)))
+  (check (sensible-matching? the-matching))
+  (check (apply boolean/and (map (lambda (e) (in-graph? e the-graph)) the-matching)))
+  (produces 3 (length the-matching)))
 
 ;;;; Depth First Search through graphs
 
@@ -626,7 +623,7 @@
              (-> g f-g g-h)
              (-> h h-h)))
 
-(define-test (example-strongly-connected-components)
+(define (example-strongly-connected-components)
              (define the-graph (clr-graph3))
              (define the-scc
                (strongly-connected-components
@@ -638,8 +635,7 @@
                             (sort (map vertex-name (map car component)) symbol<?))
                           (group-by (hash-table->alist scc-table) cdr))
                      (lexicgraphic-order symbol<?)))
-             (check (equal? '((a b e) (c d) (f g) (h)) (dump-scc the-scc)))
-             )
+             (produces '((a b e) (c d) (f g) (h)) (dump-scc the-scc)))
 
 ;;; TODO Abstract commonalities of treatment of vertices and edges
 ;;; TODO Nicety: draw dot pictures of these graphs

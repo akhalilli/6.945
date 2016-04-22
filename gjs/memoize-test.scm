@@ -1,13 +1,13 @@
 (in-test-group
   memoize
 
-  (define-test (smoke)
+  (define (smoke)
                (let ((a (list 1))  ; Distinct, fresh, uninterned objects
                      (b (list 2)))
                  (check (eq? (cons-unique a b)
                              (cons-unique a b)))))
 
-  (define-test (cons-leaks-not)
+  (define (cons-leaks-not)
                (define (one-fresh-cons)
                  (let ((new-frob1 (list 'frob))
                        (new-frob2 (list 'frob)))
@@ -16,7 +16,7 @@
                            (repeated 1000 one-fresh-cons))
                          50)))
 
-  (define-test (weak-eq-hashing)
+  (define (weak-eq-hashing)
                (define frotz (make-eq-hash-table))
                (define (one-fresh-object)
                  (hash-table/put! frotz (list 'fresh) (list 'fresh-value)))
@@ -38,18 +38,15 @@
                          25))
                (check (= 0 (hash-table/count frotz))))
 
-  (define-test (weak-cleaning)
-               (interaction
-                 (define frotz (make-eq-hash-table))
-                 (hash-table/put! frotz #f 4)
-                 (hash-table/get frotz #f #f)
-                 (produces 4)
-                 (hash-table/clean! frotz)
-                 (hash-table/get frotz #f #f)
-                 ;; Oops!
-                 (produces #f)))
+  (define (weak-cleaning)
+    (define frotz (make-eq-hash-table))
+    (hash-table/put! frotz #f 4)
+    (produces 4 (hash-table/get frotz #f #f))
+    (hash-table/clean! frotz)
+    ;; Oops!
+    (produces #f (hash-table/get frotz #f #f)))
 
-  (define-test (weak-self-reference)
+  (define (weak-self-reference)
                (define frotz (make-eq-hash-table))
                (define (one-fresh-object)
                  (let ((fresh-object (list 'fresh)))
@@ -66,11 +63,10 @@
                (check (> (memory-loss-from (prod-the-table 1000))
                          6000)))
 
-  (define-test (strong-tidy-tables)
+  (define (strong-tidy-tables)
                (define (ok? key value)
                  (eq? value 'ok))
-               (define frotz ((strong-tidy-hash-table/constructor
-                                eq-hash-mod eq? ok?)))
+               (define frotz (make-strong-eq-hash-table))
                (define (fresh-ok-object)
                  (hash-table/put! frotz (list 'fresh) 'ok))
                (define (fresh-not-ok-object)
@@ -91,7 +87,7 @@
                (check (= 1000 (hash-table/count frotz)))
                )
 
-  (define-test (cons-unique-leaks-not)
+  (define (cons-unique-leaks-not)
                (define (one-fresh-unique-cons)
                  (let ((new-frob1 (list 'frob))
                        (new-frob2 (list 'frob)))
@@ -107,18 +103,18 @@
                (check (> (memory-loss-from (prod-the-table 1000))
                          15000)))
 
-  (define-test (lambda-leaks-not)
+  (define (lambda-leaks-not)
                (define (one-fresh-procedure)
                  (let ((fresh (list 'fresh)))
                    (lambda (x y) fresh)))
                (check (< (memory-loss-from (repeated 1000 one-fresh-procedure))
                          10)))
 
-  (define-test
+  (define
     (check (< (memory-loss-from (repeated 1000 make-eq-hash-table))
               10)))
 
-  (define-test (binary-memoize-eq-leaks-not)
+  (define (binary-memoize-eq-leaks-not)
                (define (one-fresh-memoizer)
                  (binary-memoize-eq
                    (let ((fresh (list 'fresh)))

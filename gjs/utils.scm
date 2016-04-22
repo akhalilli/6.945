@@ -49,5 +49,5 @@
             (else
               (let ((key (property (car lst))))
                 (hash-table/modify!
-                  answers key (lambda (datum) (cons (car lst) datum)) '())
+                  answers key '() (lambda (datum) (cons (car lst) datum)))
                 (loop (cdr lst))))))))

@@ -75,12 +75,7 @@
 (define (binary-memoize-eq f)
   ;; I don't want to cons if unnecessary.
   (let ((the-table
-          ((strong-tidy-hash-table/constructor
-             weak-doublet-eqv-hash-mod
-             weak-doublet-eqv?
-             (lambda (key datum)
-               (not (weak-list-dead? key)))
-             #t)))
+          (make-key-ephemeral-eq-hash-table))
         (the-key (weak-cons #f (weak-cons #f '()))))
 
     (define (memo-f x y)

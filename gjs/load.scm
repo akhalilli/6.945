@@ -29,7 +29,7 @@
 (define (load-relative-compiled filename)
   (self-relatively (lambda () (load-compiled filename))))
 
-(load-relative "../../../testing/load")
+; (load-relative "../../../testing/load")
 
 (self-relatively
   (lambda ()
@@ -38,10 +38,21 @@
 (define strong-tidy-hash-table/constructor
   (access strong-tidy-hash-table/constructor (->environment '(runtime hash-table))))
 
+(define (check pred #!optional error-comment)
+  (or pred (error (if (default-object? error-comment) 'check error-comment))))
+
+(define (define-each-check . args)
+  (for-each check args))
+
+(define (produces expected calculated)
+  (check (equal? expected calculated) (list expected calculated))
+  calculated)
+
 (for-each load-relative-compiled
           '("eq-properties"
             "memoize"
             "utils"
+            "graphs-a"
             "graphs"
             "accumulators"
             "driver"
