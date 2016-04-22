@@ -1,0 +1,18 @@
+# scheme compiled
+*.bci
+*.bin
+*.com
+*.ext
+
+# LaTeX
+*.aux
+*.fdb_latexmk
+*.fls
+*.out
+*.pre
+*.pyc
+*.log
+*.synctex.gz
+
+# vim
+.*.sw?
