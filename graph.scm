@@ -27,6 +27,9 @@
 (define edges->stream stream-cdr)
 (define edges->list (compose stream->list edges->stream))
 (define vertex-edges-stream (compose edges->stream vertex-edges))
+(define vertex-edges-list (compose stream->list vertex-edges-stream))
+(define (set-vertex-edges-stream! vertex edges-stream)
+  (set-vertex-edges! vertex (cons-stream 'edges edges-stream)))
 
 (define-structure (edge (keyword-constructor %make-edge))
                   tail
@@ -70,3 +73,16 @@
                              (car rest)
                              (parse (cdr fields)
                                     (cdr rest)))))))))
+
+(define (add-edge! edge)
+  (let ((tail (edge-tail edge)))
+    (if (not (memq edge (vertex-edges-list tail)))
+      (let ((edges-stream (vertex-edges-stream tail)))
+        (set-vertex-edges-stream! tail (cons-stream edge edges-stream))))))
+
+(define (remove-edge! edge)
+  (let ((tail (edge-tail edge)))
+    (if (memq edge (vertex-edges-list tail))
+      (let ((edges-stream (stream-filter (lambda (x) (not (eq? edge x)))
+                                         (vertex-edges-stream tail))))
+        (set-vertex-edges-stream! tail edges-stream)))))
