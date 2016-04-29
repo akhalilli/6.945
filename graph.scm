@@ -1,3 +1,5 @@
+;;;; Utilities
+
 (define ((compose f g) x) (f (g x)))
 (define (identity x) x)
 (define (compose* . functions)
@@ -18,7 +20,6 @@
                 ((_ (f args ...) bodies ...)
                  (define f
                    (let ((results (make-equal-hash-table)))
-                     ; need to do this to capture both the names and the values
                      (lambda (args ...)
                        ((lambda vals
                           (hash-table/lookup results vals
@@ -38,27 +39,96 @@
     (cond
       ((= 0 depth) x)
       ((not (pair? x)) x)
-      (else (cons (streams->lists (value (car x)) (-1+ depth))
-                  (streams->lists (value (cdr x)) depth))))))
+      (else (cons (streams->lists (car x) (-1+ depth))
+                  (streams->lists (cdr x) depth))))))
 
-(define lattice-label stream-car)
-(define (lattice-edges vertex)
-  (stream-map (lambda (x) (list vertex x)) (stream-cdr vertex)))
-(define-memoized (lattice x y) ; TODO: memoize
-  (cons-stream*
-    (list x y)
-    (lattice (1+ x) y)
-    (lattice x (1+ y))
-    (lattice (-1+ x) y)
-    (lattice x (-1+ y))))
+;;;; Vertex and edge structures and creation
 
-(define vertex-edges (compose stream->list lattice-edges))
-(define vertex-label lattice-label)
+(define-structure (vertex (constructor %make-vertex))
+                  edges
+                  name
+                  graph)
+(set-record-type-unparser-method!
+  rtd:vertex
+  (standard-unparser-method 'vertex (lambda (obj port)
+                                      (write-char #\  port)
+                                      (write (vertex-name obj) port))))
 
-;;; Adapted from gjs
+(define (make-vertex edges #!optional name graph)
+  (%make-vertex
+    edges
+    (if (default-object? name)
+      (generate-uninterned-symbol 'vertex)
+      name)
+    (if (default-object? graph)
+      #f
+      graph)))
+
+(define-syntax edges
+  (syntax-rules ()
+                ((_ tail (args ...) ...)
+                 (cons-stream* 'edges (make-edge tail args ...) ...))))
+(define edges->stream stream-cdr)
+(define edges->list (compose stream->list edges->stream))
+(define vertex-edges-stream (compose edges->stream vertex-edges))
+
+(define-structure (edge (keyword-constructor %make-edge))
+                  tail
+                  head
+                  (name 'edge)
+                  graph
+                  (weight 1)
+                  (capacity 1))
+(set-record-type-unparser-method!
+  rtd:edge
+  (standard-unparser-method 'edge (lambda (obj port)
+                                    (write-char #\  port)
+                                    (write (edge-name obj) port))))
+
+(define (make-edge tail head . rest)
+  (apply %make-edge
+         (cons* 'tail tail 'head head
+                (let parse
+                  ((fields (list-tail (record-type-field-names rtd:edge) 2))
+                   (rest rest))
+                  (define (find-prefix symbol fields)
+                    (list-index (lambda (x)
+                                  (string-prefix? (symbol->string symbol)
+                                                  (symbol->string x)))
+                                fields))
+                  (cond
+                    ((null? rest)
+                     (if (and (pair? fields) (eq? 'name (car fields)))
+                       (list 'name (list '-- (vertex-name tail) (vertex-name head)))
+                       '()))
+                    ((and (symbol? (car rest))
+                          (find-prefix (car rest) fields))
+                     (let ((ref (find-prefix (car rest) fields)))
+                       (cons* (list-ref fields ref)
+                              (cadr rest)
+                              (parse (append (list-head fields ref)
+                                             (list-tail fields (1+ ref)))
+                                     (cddr rest)))))
+                    (else
+                      (cons* (car fields)
+                             (car rest)
+                             (parse (cdr fields)
+                                    (cdr rest)))))))))
+
+;;;; Lattice
+(define-memoized (lattice x y)
+                 (make-vertex
+                   (edges (lattice x y)
+                          ((lattice (1+ x) y))
+                          ((lattice x (1+ y)))
+                          ((lattice (-1+ x) y))
+                          ((lattice x (-1+ y))))
+                   (list x y)))
+
+;;;; Adapted from gjs
 (define (sort-by object property)
   (sort object (lambda (a b) (< (property a) (property b)))))
-(define (shortest-path-tree source sink edge-length)
+(define (shortest-path-tree source sink)
   (let ((done (make-eq-hash-table))
         (answer (make-eq-hash-table)))
     (define (done? vertex)
@@ -82,15 +152,15 @@
     (define (process! vertex)
       (let ((distance (distance vertex)))
         (define (relax! edge)
-          (let ((length (edge-length edge)))
+          (let ((length (edge-weight edge)))
             (if (not length)
               ;; Edge not allowed
               'ok
-              (merge-distance! (second edge)
+              (merge-distance! (edge-head edge)
                                (+ distance length)
-                               (first edge)))))
+                               (edge-tail edge)))))
         (assert distance)
-        (for-each relax! (vertex-edges vertex))
+        (for-each relax! (stream->list (vertex-edges-stream vertex)))
         (hash-table/put! done vertex #t)))
     (define (next-vertex)
       (let ((candidates (filter (lambda (v)
@@ -107,14 +177,17 @@
                  (loop)))))
     answer))
 
-#| ;;; Proof of concept with infinite graphs
+#|
 
-(define example-shortest-paths (shortest-path-tree (lattice 0 0) (lattice 3 5) (lambda (e) 1)))
+;;;; Shortest path example with infinite graphs
+
+(define example-shortest-paths
+  (shortest-path-tree (lattice 0 0) (lattice 3 5)))
 
 (hash-table/get example-shortest-paths (lattice 3 5) #f)
-;Value: (8 (3 4) . #[promise 14])
+;Value: (8 . #[vertex 14 (3 4)])
 
 (hash-table/count example-shortest-paths)
-;Value: 175
+;Value: 155
 
 |#
