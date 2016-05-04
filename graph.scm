@@ -44,6 +44,12 @@
                                     (write-char #\  port)
                                     (write (edge-name obj) port))))
 
+;; This parses the arguments to create an edge.
+;; Examples:
+;; (make-edge a b 'edge) -> (%make-edge 'tail a 'head b 'name 'edge)
+;; (make-edge a b 'w 3 'c 7) -> (%make-edge 'tail a 'head b 'name [name] 'weight 3 'capacity 7)
+;; (make-edge a b 'c 7 'w 3) -> (%make-edge 'tail a 'head b 'name [name] 'weight 3 'capacity 7)
+;; (make-edge a b 'w 3 'name 'edge) -> (%make-edge 'tail a 'head b 'name 'edge 'weight 3)
 (define (make-edge tail head . rest)
   (apply %make-edge
          (cons* 'tail tail 'head head
@@ -80,6 +86,7 @@
       (let ((edges-stream (vertex-edges-stream tail)))
         (set-vertex-edges-stream! tail (cons-stream edge edges-stream))))))
 
+;; Be careful. Removing an edge from a vertex with infinite degree will not return.
 (define (remove-edge! edge)
   (let ((tail (edge-tail edge)))
     (if (memq edge (vertex-edges-list tail))

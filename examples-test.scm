@@ -8,3 +8,12 @@
 
 (hash-table/count example-shortest-paths)
 ;Value: 155
+
+;;;; Examples using graph methods
+
+(define v-a (lattice 2 3))
+(define v-b (lattice 5 7))
+
+(define edge (make-edge a b 'w 5 'c 3))
+(add-edge! edge)
+(remove-edge! edge)
