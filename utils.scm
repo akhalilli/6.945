@@ -8,6 +8,7 @@
              (apply compose* (cdr functions)))
     identity))
 
+;; like stream, but arguments after the first are not evaluated
 (define-syntax cons-stream*
   (syntax-rules ()
                 ((_) the-empty-stream)
@@ -41,3 +42,17 @@
       ((not (pair? x)) x)
       (else (cons (streams->lists (car x) (-1+ depth))
                   (streams->lists (cdr x) depth))))))
+
+;; infinite stream when n is #f
+(define (stream-iota n)
+  (define (start k)
+    (if (eq? n k)
+      '()
+      (cons-stream k (start (1+ k)))))
+  (start 0))
+
+(define (sgn x)
+  (cond
+    ((eq? 0 x) 0)
+    ((< 0 x) 1)
+    (else -1)))

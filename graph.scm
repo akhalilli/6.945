@@ -24,12 +24,16 @@
   (syntax-rules ()
                 ((_ tail (args ...) ...)
                  (cons-stream* 'edges (make-edge tail args ...) ...))))
+(define-syntax make-edges
+  (syntax-rules ()
+                ((_ edges-stream)
+                 (cons-stream 'edges edges-stream))))
 (define edges->stream stream-cdr)
 (define edges->list (compose stream->list edges->stream))
 (define vertex-edges-stream (compose edges->stream vertex-edges))
 (define vertex-edges-list (compose stream->list vertex-edges-stream))
 (define (set-vertex-edges-stream! vertex edges-stream)
-  (set-vertex-edges! vertex (cons-stream 'edges edges-stream)))
+  (set-vertex-edges! vertex (make-edges edges-stream)))
 
 (define-structure (edge (keyword-constructor %make-edge))
                   tail
@@ -80,16 +84,41 @@
                              (parse (cdr fields)
                                     (cdr rest)))))))))
 
+;; Be careful. Adding or removing an edge from a vertex with infinite degree will not return.
 (define (add-edge! edge)
   (let ((tail (edge-tail edge)))
     (if (not (memq edge (vertex-edges-list tail)))
       (let ((edges-stream (vertex-edges-stream tail)))
         (set-vertex-edges-stream! tail (cons-stream edge edges-stream))))))
 
-;; Be careful. Removing an edge from a vertex with infinite degree will not return.
 (define (remove-edge! edge)
   (let ((tail (edge-tail edge)))
     (if (memq edge (vertex-edges-list tail))
       (let ((edges-stream (stream-filter (lambda (x) (not (eq? edge x)))
                                          (vertex-edges-stream tail))))
         (set-vertex-edges-stream! tail edges-stream)))))
+
+(define (traverse vertex seq)
+  (if (null? seq)
+    vertex
+    (traverse (edge-head (stream-ref (vertex-edges-stream vertex) (car seq)))
+              (cdr seq))))
+
+(define ((count-graph f) vertex)
+  (let ((done (make-eq-hash-table))
+        (count 0))
+    (define (dfs vertex)
+      (if (not (hash-table/get done vertex #f))
+        (begin
+          (set! count (+ count (f vertex)))
+          (hash-table/put! done vertex #t)
+          (stream-for-each
+            dfs
+            (stream-map edge-head (vertex-edges-stream vertex))))))
+    (dfs vertex)
+    count))
+
+(define count-graph-vertices
+  (count-graph (lambda (x) 1)))
+(define count-graph-edges
+  (count-graph (compose stream-length vertex-edges-stream)))
