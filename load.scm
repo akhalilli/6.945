@@ -2,4 +2,6 @@
           '("utils"
             "graph"
             "algorithms"
-            "examples"))
+            "lattice"
+            "symmetric"
+            "random"))
