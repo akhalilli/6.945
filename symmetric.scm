@@ -37,6 +37,14 @@
 
 ;;;; Platonic Solids
 (define phi 2)
+(define actual-phi (/ (+ 1 (sqrt 5)) 2))
+(define (actual-coord v)
+  (map (lambda (x)
+         (cond
+           ((eqv? phi (abs x)) (* (/ actual-phi phi) x))
+           ((eqv? (/ phi) (abs x)) (* (/ phi actual-phi) x))
+           (else x)))
+       v))
 
 (define tetrahedron
   (let ()
@@ -111,7 +119,7 @@
                            (edges (vertex coords)
                                   ((vertex (map (lambda (q) (case q ((0) 1) (else (sgn q)))) coords)))
                                   ((vertex (map (lambda (q) (case q ((0) -1) (else (sgn q)))) coords)))
-                                  ((vertex (map (lambda (q) (case (abs q) ((/ phi) (- q)) (else q))) coords)))))
+                                  ((vertex (map (lambda (q) (if (eqv? (/ phi) (abs q)) (- q) q)) coords)))))
                          coords)))
     (vertex '(1 1 1))))
 

@@ -136,7 +136,9 @@
   (let ((k (if (default-object? k) 1 k)))
     (traverse-random-weighted vertex k)))
 
-(define ((count-graph f) vertex)
+;; f is a function to be applied to all vertices.
+;; The sum of f on all vertices is returned.
+(define ((graph-dfs f) vertex)
   (let ((done (make-eq-hash-table))
         (count 0))
     (define (dfs vertex)
@@ -151,6 +153,6 @@
     count))
 
 (define count-graph-vertices
-  (count-graph (lambda (x) 1)))
+  (graph-dfs (lambda (x) 1)))
 (define count-graph-edges
-  (count-graph (compose stream-length vertex-edges-stream)))
+  (graph-dfs (compose stream-length vertex-edges-stream)))

@@ -5,4 +5,5 @@
             "lattice"
             "symmetric"
             "random"
-            "walk"))
+            "walk"
+            "graphics"))
