@@ -37,22 +37,34 @@
 
 ;;;; Platonic Solids
 (define phi 2)
-(define (list-shift-left list #!optional k)
-  (let ((k (if (default-object? k) 1 k)))
-    (append (list-tail list k) (list-head list k))))
 
-(define tetrahedron (make-complete 4))
+(define tetrahedron
+  (let ()
+    (define-memoized (vertex coords)
+                     (let ((x (first coords))
+                           (y (second coords))
+                           (z (third coords)))
+                       (make-vertex
+                         (edges (vertex coords)
+                                ((vertex (list x (- y) (- z))))
+                                ((vertex (list (- x) y (- z))))
+                                ((vertex (list (- x) (- y) z))))
+                         coords)))
+    (vertex '(1 1 1))))
 
 (define octahedron
   (let ()
     (define-memoized (vertex coords)
-                     (make-vertex
-                       (edges (vertex coords)
-                         ((vertex (list-shift-left coords)))
-                         ((vertex (map - (list-shift-left coords))))
-                         ((vertex (list-shift-left coords 2)))
-                         ((vertex (map - (list-shift-left coords 2)))))
-                       coords))
+                     (let ((x (first coords))
+                           (y (second coords))
+                           (z (third coords)))
+                       (make-vertex
+                         (edges (vertex coords)
+                                ((vertex (list y z x)))
+                                ((vertex (map - (list y z x))))
+                                ((vertex (list z x y)))
+                                ((vertex (map - (list z x y)))))
+                         coords)))
     (vertex '(1 0 0))))
 
 (define cube
