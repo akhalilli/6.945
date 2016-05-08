@@ -112,8 +112,29 @@
                   ((not (eq? 0 length)) (edge-head (stream-ref edge-stream (random length))))
                   (else vertex)))
               (cdr seq))))
-(define (traverse-random vertex k)
-  (traverse vertex (make-list k #f)))
+
+;; Traverse k edges randomly in proportion to edge weights.
+;; Goes nowhere if no edges.
+(define (traverse-random-weighted vertex #!optional k)
+  (let ((k (if (default-object? k) 1 k)))
+    (if (eq? 0 k)
+      vertex
+      (traverse-random-weighted
+        (let iter ((edges-stream (vertex-edges-stream vertex))
+                   (head vertex)
+                   (sum 0))
+          (if (null? edges-stream)
+            head
+            (let* ((edge (stream-car edges-stream))
+                   (weight (edge-weight edge))
+                   (sum (+ sum weight)))
+              (iter (stream-cdr edges-stream)
+                    (if (> 1 (random (exact->inexact (/ sum weight)))) (edge-head edge) head)
+                    sum))))
+        (-1+ k)))))
+(define (traverse-random vertex #!optional k)
+  (let ((k (if (default-object? k) 1 k)))
+    (traverse-random-weighted vertex k)))
 
 (define ((count-graph f) vertex)
   (let ((done (make-eq-hash-table))

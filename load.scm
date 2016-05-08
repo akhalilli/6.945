@@ -4,4 +4,5 @@
             "algorithms"
             "lattice"
             "symmetric"
-            "random"))
+            "random"
+            "walk"))

@@ -16,7 +16,7 @@
     vertex))
 
 (define (bernoulli p)
-  (lambda (k x) (> 1 (random (/ p)))))
+  (lambda (k x) (> 1 (random (exact->inexact (/ p))))))
 
 (define (make-di-erdos n p)
   (make-numbered n (bernoulli p)))
@@ -32,12 +32,9 @@
 
 (vertex-edges-list ((make-di-erdos 5 .5) 0))
 ;Value: (#[edge (-- 0 2)] #[edge (-- 0 4)])
-
 (apply shortest-path (map (make-di-erdos 6 .5) '(0 5)))
 ;Value: (2 . #[vertex 2])
-
 (apply shortest-path (map (make-random-graph 6 .5) '(0 5)))
 ;Value: (.8948368051215073 . #[vertex 3])
-
 (traverse-random ((make-random-graph 6 .5) 3) 3)
 ;Value: #[vertex 2]
