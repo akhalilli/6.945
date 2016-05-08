@@ -98,6 +98,7 @@
                        (make-vertex
                          (edges (vertex coords)
                                 ((vertex (map (lambda (q) (case (abs q) ((1) (- q)) (else q))) coords)))
+                                ((vertex (map (lambda (q) (case (abs q) ((0) (- phi)) ((1) 0) (else (sgn q)))) coords)))
                                 ((vertex (map (lambda (q) (case (abs q) ((0) phi) ((1) 0) (else (sgn q)))) coords)))
                                 ((vertex (map (lambda (q) (case (abs q) ((0) -1) ((1) (* phi q)) (else 0))) coords)))
                                 ((vertex (map (lambda (q) (case (abs q) ((0) 1) ((1) (* phi q)) (else 0))) coords))))
@@ -138,7 +139,7 @@
 (count-graph-vertices icosahedron)
 ;Value: 12
 (count-graph-edges icosahedron)
-;Value: 48
+;Value: 60
 (count-graph-vertices dodecahedron)
 ;Value: 20
 (count-graph-edges dodecahedron)

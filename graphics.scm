@@ -34,6 +34,19 @@
 (define (normalized u) (dot (/ (norm u)) u))
 (define (proj u v) (v:* (/ (dot u v) (sqr-norm u)) u))
 
+(define ((rotate-x theta) v)
+  (list (first v)
+        (+ (* (cos theta) (second v)) (* (- (sin theta)) (third v)))
+        (+ (* (sin theta) (second v)) (* (cos theta) (third v)))))
+(define ((rotate-y theta) v)
+  (list (+ (* (cos theta) (first v)) (* (sin theta) (third v)))
+        (second v)
+        (+ (* (- (sin theta)) (first v)) (* (cos theta) (third v)))))
+(define ((rotate-z theta) v)
+  (list (+ (* (cos theta) (first v)) (* (- (sin theta)) (second v)))
+        (+ (* (sin theta) (first v)) (* (cos theta) (second v)))
+        (third v)))
+
 (define (random-point #!optional k n)
   (let ((k (if (default-object? k) 3 k))
         (n (if (default-object? n) 1. n)))
@@ -55,10 +68,15 @@
 
 (define (camera-vertex . args)
   (compose* (apply camera args) actual-coord vertex-name))
+(define (camera-vertex-transform transform . args)
+  (compose* (apply camera args) transform actual-coord vertex-name))
 
 (define (camera-vertex-random #!optional scale)
   (let ((scale (if (default-object? scale) 1 scale)))
     (camera-vertex (random-point) (random-point) scale)))
+(define (camera-vertex-transform-random transform #!optional scale)
+  (let ((scale (if (default-object? scale) 1 scale)))
+    (camera-vertex-transform transform (random-point) (random-point) scale)))
 
 ;;;; Graphics
 (define (make-graphics)
@@ -75,10 +93,25 @@
                   0))
      vertex)))
 
+(define (draw-3d-graph-rotate vertex rate #!optional scale device)
+  (let ((device (if (default-object? device) (make-graphics) device))
+        (scale (if (default-object? scale) 1 scale))
+        (forward (random-point))
+        (up (random-point)))
+    (let iter ((t 0))
+      (let ((r (rotate-y t)))
+        (graphics-clear device)
+        (draw-graph vertex (camera-vertex-transform r forward up scale) device)
+        (sleep-current-thread 50)
+        (iter (+ t rate))))))
+
+
 #|
 (draw-graph tetrahedron (camera-vertex '(0 3 -1) '(9 1 2) 0.5))
 (draw-graph octahedron (camera-vertex '(0 0 -1) '(0 1 0)))
 (draw-graph icosahedron (camera-vertex '(0 0 -1) '(0 1 0) 0.5))
 (draw-graph icosahedron (camera-vertex-random 0.3))
 (draw-graph dodecahedron (camera-vertex-random 0.3))
+(draw-3d-graph-rotate octahedron 0.1 0.3)
+(draw-3d-graph-rotate dodecahedron 0.1 0.3)
 |#
