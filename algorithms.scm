@@ -49,3 +49,5 @@
           (begin (process! (next-vertex))
                  (loop)))))
     answer))
+(define (shortest-path source sink)
+  (hash-table/get (shortest-path-tree source sink) sink #f))

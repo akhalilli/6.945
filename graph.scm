@@ -98,11 +98,22 @@
                                          (vertex-edges-stream tail))))
         (set-vertex-edges-stream! tail edges-stream)))))
 
+;; seq is a list of indices to trace edges.
+;; Use #f to choose randomly (must have finite edges)
+;; Random goes nowhere if the vertex has no edges.
 (define (traverse vertex seq)
   (if (null? seq)
     vertex
-    (traverse (edge-head (stream-ref (vertex-edges-stream vertex) (car seq)))
+    (traverse (let* ((edge-stream (vertex-edges-stream vertex))
+                     (first (car seq))
+                     (length (stream-length edge-stream)))
+                (cond
+                  (first (edge-head (stream-ref edge-stream first)))
+                  ((not (eq? 0 length)) (edge-head (stream-ref edge-stream (random length))))
+                  (else vertex)))
               (cdr seq))))
+(define (traverse-random vertex k)
+  (traverse vertex (make-list k #f)))
 
 (define ((count-graph f) vertex)
   (let ((done (make-eq-hash-table))
