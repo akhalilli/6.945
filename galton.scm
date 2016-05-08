@@ -8,30 +8,18 @@
                           ((galton (1+ x) (1+ y))))
                    (list x y)))
 
-;;; Random walk on a graph (unweighted)
-(define (random-walk start n)
-  (let step ((n n)
-             (pos start))
-    (if (= n 0)
-        pos
-        (let* ((edges (vertex-edges-list pos))
-               (random-index (random (length edges)))
-               (random-edge (list-ref edges random-index))
-               (next-vertex (edge-head random-edge)))
-          (step (- n 1) next-vertex)))))
-
 ;;; Perform random walk on Galton box
 
 (define (galton-box) (galton 0 0))
 
-(random-walk (galton-box) 10)
+(traverse-random (galton-box) 10)
 ;Value 26: #[vertex 26 (2 10)]
 
 ;;; Draw an integer between -n and n from an approximate
 ;;; gaussian distribution using the Galton box, for large
 ;;; n.
 (define (Gaussian-distribution n)
-  (/ (car (vertex-name (random-walk (galton-box) (* 2 n)))) 2))
+  (/ (car (vertex-name (traverse-random (galton-box) (* 2 n)))) 2))
 
 ;;; Perform many runs of the Galton box
 (define (run-galton-box runs n)
