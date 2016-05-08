@@ -5,8 +5,14 @@
                      (edges (circle k)
                             ((circle (modulo (1+ k) n)))
                             ((circle (modulo (-1+ k) n))))
-                     k))
+                     k
+                     `(circle ,n)))
   (circle 0))
+(define (circle-plot vertex)
+  (let* ((k (vertex-name vertex))
+         (n (cadr (vertex-graph vertex)))
+         (theta (* 2 pi (/ k n))))
+    (list (cos theta) (sin theta))))
 
 (vertex-edges-list (make-circle 5))
 ;Value: (#[edge (-- 0 1)] #[edge (-- 0 4)])
@@ -22,7 +28,8 @@
                          (lambda (head) (make-edge (complete k) (complete head)))
                          (stream-filter (lambda (x) (not (eq? x k)))
                                         (stream-iota n))))
-                     k))
+                     k
+                     `(complete ,n)))
   (complete 0))
 
 (vertex-edges-list (make-complete 5))

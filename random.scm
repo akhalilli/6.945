@@ -12,7 +12,8 @@
                            (stream-filter (lambda (x) (and (filter k x)
                                                            (not (eqv? k x))))
                                           (stream-iota n))))
-                       k))
+                       k
+                       `(numbered ,n)))
     vertex))
 
 (define (bernoulli p)
