@@ -3,7 +3,7 @@
   (define-memoized (line k)
                    (make-vertex
                      (cond
-                       ((eq? 0 k) (edges (line k) ((line (1+ k)))))
+                       ((eq? 1 k) (edges (line k) ((line (1+ k)))))
                        ((eq? n k) (edges (line k) ((line (-1+ k)))))
                        (else (edges (line k)
                                     ((line (1+ k)))

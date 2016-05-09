@@ -31,8 +31,10 @@
               (graphics-draw-text device x y (symbol->string c)))
             '(a e g i j p q s t u v w x y z)))
 
-(define (draw-graph vertex proj #!optional device)
-  (let ((device (if (default-object? device) (make-graphics) device)))
+(define (draw-graph vertex proj #!optional device scale)
+  (let ((device (if (default-object? device) (make-graphics) device))
+        (scale (if (default-object? scale) 1 scale)))
+    (graphics-set-coordinate-limits device (- scale) (- scale) scale scale)
     ((graph-dfs (lambda (v)
                   (stream-for-each (lambda (edge)
                                      (apply graphics-draw-line
@@ -111,6 +113,7 @@
 (draw-graph icosahedron (camera-vertex-random 0.3))
 (draw-graph dodecahedron (camera-vertex-random 0.3))
 (draw-3d-graph-rotate octahedron 0.1 0.3)
+(draw-3d-graph-rotate icosahedron 0.1 0.3)
 (draw-3d-graph-rotate dodecahedron 0.1 0.3)
 |#
 
@@ -124,5 +127,9 @@
 |#
 
 #|
+(draw-graph (make-lollipop 12) lollipop-plot (make-graphics) 4)
 (draw-random-walk (make-circle 12) circle-plot 200 1.2)
+(draw-random-walk (make-complete 12) circle-plot 200 1.2)
+(draw-random-walk (make-line 12) line-plot 200 4)
+(draw-random-walk (make-lollipop 12) lollipop-plot 200 4)
 |#

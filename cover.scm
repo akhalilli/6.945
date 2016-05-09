@@ -17,6 +17,17 @@
     (add-edge! (make-edge line clique))
     clique))
 
+(define (line-plot vertex)
+  (define line-length 2)
+    `(,(+ 1 (* line-length (/ (vertex-name vertex)
+                              (cadr (vertex-graph vertex)))))
+       0))
+(define (lollipop-plot vertex)
+  ((if (equal? 'complete (car (vertex-graph vertex)))
+     circle-plot
+     line-plot)
+   vertex))
+
 #|
 (cover-time (make-complete 25))
 ;Value: 65
