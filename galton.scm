@@ -1,6 +1,6 @@
 ;;;; A demonstration of a Galton box using the graph library
 
-;;; Galton box graph of depth n
+;;; Infinite Galton box graph
 (define-memoized (galton x y)
                  (make-vertex
                    (edges (galton x y)
