@@ -1,3 +1,17 @@
+;;;; Line Graphs
+(define (make-line n)
+  (define-memoized (line k)
+                   (make-vertex
+                     (cond
+                       ((eq? 0 k) (edges (line k) ((line (1+ k)))))
+                       ((eq? n k) (edges (line k) ((line (-1+ k)))))
+                       (else (edges (line k)
+                                    ((line (1+ k)))
+                                    ((line (-1+ k))))))
+                     k
+                     `(line ,n)))
+  (line 1))
+
 ;;;; Circle Graphs
 (define (make-circle n)
   (define-memoized (circle k)

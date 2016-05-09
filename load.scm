@@ -6,4 +6,5 @@
             "symmetric"
             "random"
             "walk"
+            "cover"
             "graphics"))
