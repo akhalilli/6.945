@@ -56,10 +56,10 @@
 	  (display (vertex-name pos)) (display " ")
 	  (loop (- steps 1) (traverse pos '(0)))))))
 
-(follow-first-edge C5-cayley 6)
+;(follow-first-edge C5-cayley 6)
 ;0 2 4 1 3 0
 
-(follow-first-edge C10-cayley 11)
+;(follow-first-edge C10-cayley 11)
 ;0 3 6 9 2 5 8 1 4 7 0
 
 ;;; Free groups

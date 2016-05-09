@@ -1,4 +1,9 @@
 ;;;; Camera
+
+;;; Construct a projection from the xyz-plane onto 2-dimensions
+;;; forward and up are lists of 3 elements representing vectors
+;;; in the forward and up direction.
+;;; scale can zoom, defaulted to the ratio of the up and forward vectors
 (define (camera forward up #!optional scale)
   (let* ((z (v:- forward))
          (y (v:- up (proj z up)))
@@ -15,6 +20,7 @@
 (define (camera-vertex-transform transform . args)
   (compose* (apply camera args) transform actual-coord vertex-name))
 
+;;; Create a camera angle in a random direction
 (define (camera-vertex-random #!optional scale)
   (let ((scale (if (default-object? scale) 1 scale)))
     (camera-vertex (random-point) (random-point) scale)))
@@ -23,9 +29,11 @@
     (camera-vertex-transform transform (random-point) (random-point) scale)))
 
 ;;;; Graphics
+
 (define (make-graphics)
   (make-graphics-device (car (enumerate-graphics-types))))
 
+;;; super hack-ish, but easiest way to get a dot (more than one pixel) in native scheme
 (define (graphics-draw-dot device x y)
   (for-each (lambda (c)
               (graphics-draw-text device x y (symbol->string c)))
@@ -107,6 +115,9 @@
         (iter next (1+ t))))))
 
 #|
+
+;;;; Cool examples. Make sure to load load-examples first.
+
 (draw-graph tetrahedron (camera-vertex '(0 3 -1) '(9 1 2) 0.5))
 (draw-graph octahedron (camera-vertex '(0 0 -1) '(0 1 0)))
 (draw-graph icosahedron (camera-vertex '(0 0 -1) '(0 1 0) 0.5))
@@ -115,21 +126,18 @@
 (draw-3d-graph-rotate octahedron 0.1 0.3)
 (draw-3d-graph-rotate icosahedron 0.1 0.3)
 (draw-3d-graph-rotate dodecahedron 0.1 0.3)
-|#
 
-#|
 (draw-graph (make-circle 6) circle-plot)
 (draw-graph (make-circle 12) circle-plot)
 (draw-graph (make-complete 6) circle-plot)
 (draw-graph (make-complete 12) circle-plot)
 (draw-graph ((make-di-erdos 6 0.5) 0) circle-plot)
 (draw-graph ((make-di-erdos 12 0.5) 0) circle-plot)
-|#
 
-#|
 (draw-graph (make-lollipop 12) lollipop-plot (make-graphics) 4)
 (draw-random-walk (make-circle 12) circle-plot 1.2)
 (draw-random-walk (make-complete 12) circle-plot 1.2)
 (draw-random-walk (make-line 12) line-plot 4)
 (draw-random-walk (make-lollipop 12) lollipop-plot 4)
+
 |#

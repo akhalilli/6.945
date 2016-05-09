@@ -1,4 +1,5 @@
 ;;;; Infinite line graph
+
 (define-memoized (line x)
                  (make-vertex
                    (edges (line x)
@@ -6,7 +7,7 @@
                           ((line (-1+ x))))
                    x))
 
-;; steps to reach sink from source
+;;; number of steps to reach sink from source (aborting after limit steps)
 (define (reach source sink #!optional limit count)
   (let ((limit (if (default-object? limit) #f limit))
         (count (if (default-object? count) 0 count)))
@@ -20,10 +21,12 @@
               (1+ count))))))
 
 #|
+
 (traverse-random (line 0) 500)
 ;Value: #[vertex 32]
 (reach (line 0) (line 5))
 ;Value: 65
 (reach (line 0) (line 20))
 ;Value: 940
+
 |#

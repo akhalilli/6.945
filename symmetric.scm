@@ -1,4 +1,5 @@
 ;;;; Line Graphs
+
 (define (make-line n)
   (define-memoized (line k)
                    (make-vertex
@@ -12,7 +13,8 @@
                      `(line ,n)))
   (line 1))
 
-;;;; Circle Graphs
+;;;; Circle/Cycle Graphs
+
 (define (make-circle n)
   (define-memoized (circle k)
                    (make-vertex
@@ -22,6 +24,8 @@
                      k
                      `(circle ,n)))
   (circle 0))
+
+;;; Procedure to place on the unit circle, see graphics.scm for use
 (define (circle-plot vertex)
   (let* ((k (vertex-name vertex))
          (n (cadr (vertex-graph vertex)))
@@ -33,7 +37,8 @@
 (vertex-edges-list (edge-head (cadr (vertex-edges-list (make-circle 5)))))
 ;Value: (#[edge (-- 4 0)] #[edge (-- 4 3)])
 
-;;;; Complete Graphs
+;;;; Complete/Clique Graphs
+
 (define (make-complete n)
   (define-memoized (complete k)
                    (make-vertex
@@ -57,6 +62,10 @@
 ;Value: (#[edge (-- 0 5)] . #[promise])
 
 ;;;; Platonic Solids
+
+;;; The icosahedron and dodecahedron have coordinates in term's of phi, Euler's constant.
+;;; To ensure eqv? properties, we pretend phi=2, and convert to the actual value
+;;; when necessary, like for displaying graphically.
 (define phi 2)
 (define actual-phi (/ (+ 1 (sqrt 5)) 2))
 (define (actual-coord v)
@@ -67,6 +76,9 @@
            (else x)))
        v))
 
+;;; Note that this is equivalent topologically to the complete graph on 4 vertices,
+;;; but we define it here with explicit vertex coordinates.
+;;; (This is also helpful for displaying graphically.)
 (define tetrahedron
   (let ()
     (define-memoized (vertex coords)

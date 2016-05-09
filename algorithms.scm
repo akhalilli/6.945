@@ -1,4 +1,5 @@
-;;;; Adapted from gjs
+;;;; Shortest path, adapted from gjs
+
 (define (sort-by object property)
   (sort object (lambda (a b) (< (property a) (property b)))))
 (define (shortest-path-tree source sink)

@@ -10,7 +10,7 @@
 
 (define pi (* 4 (atan 1 1)))
 
-;; like stream, but arguments after the first are not evaluated
+;;; like stream, but arguments after the first are not evaluated
 (define-syntax cons-stream*
   (syntax-rules ()
                 ((_) the-empty-stream)
@@ -18,6 +18,8 @@
                 ((_ first second ...)
                  (cons-stream first (cons-stream* second ...)))))
 
+;;; like define, but memoizizes results in a hash table keyed by the arguments.
+;;; very useful for ensuring the exact same object is returned.
 (define-syntax define-memoized
   (syntax-rules ()
                 ((_ (f args ...) bodies ...)
@@ -36,16 +38,7 @@
 (define (value x)
   (if (promise? x) (force x) x))
 
-(define (streams->lists x #!optional depth)
-  (let ((x (value x))
-        (depth (if (default-object? depth) 1 depth)))
-    (cond
-      ((= 0 depth) x)
-      ((not (pair? x)) x)
-      (else (cons (streams->lists (car x) (-1+ depth))
-                  (streams->lists (cdr x) depth))))))
-
-;; infinite stream when n is #f
+;;; infinite stream when n is #f (or not a nonnegative integer)
 (define (stream-iota n)
   (define (start k)
     (if (eq? n k)
@@ -60,6 +53,9 @@
     (else -1)))
 
 ;;;; Linear algebra
+;;; Without defining a complete matrix algebra, this is a little messy.
+;;; This is heavily focused on operations for camera angle in graphics.
+
 (define ((v-op op) . vecs)
   (if (eq? 1 (length vecs))
     (map op (car vecs))
@@ -108,6 +104,9 @@
         (+ (* (sin theta) (first v)) (* (cos theta) (second v)))
         (third v)))
 
+;;; Get a random point in the box from (-n,-n,-n) to (n,n,n).
+;;; Note that if n is an integer, points with a 0 coordinate are counted double.
+;;; TODO: Use a Guassian distribution (cf. galton box) to generate uniform random direction.
 (define (random-point #!optional k n)
   (let ((k (if (default-object? k) 3 k))
         (n (if (default-object? n) 1. n)))

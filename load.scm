@@ -2,9 +2,4 @@
           '("utils"
             "graph"
             "algorithms"
-            "lattice"
-            "symmetric"
-            "random"
-            "walk"
-            "cover"
             "graphics"))

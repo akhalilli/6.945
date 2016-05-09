@@ -1,9 +1,15 @@
 ;;;; Vertex and edge structures and creation
 
+;;; A vertex consists of a stream of edges (prepended so that the first edge is also delayed)
+;;; and an identifier/name. The identifier is the argement in the definition of the procedure
+;;; creating a vertex. The name field in the record is used mostly for printing purposes.
+;;; The graph field is sometimes used to help position a vertex when displaying it graphically.
 (define-structure (vertex (constructor %make-vertex))
                   edges
                   name
                   graph)
+
+;;; Printer for vertex
 (set-record-type-unparser-method!
   rtd:vertex
   (standard-unparser-method 'vertex (lambda (obj port)
@@ -20,6 +26,16 @@
       #f
       graph)))
 
+;;; Syntactic sugar for defining a bunch of edges with the same tail,
+;;; eg. for outgoing edges from a vertex.
+;;; Example:
+;;;   ('edges tail
+;;;           (head-1 [arguments like weight, etc])
+;;;           ...
+;;;           (head-k [arguments like weight, etc]))
+;;; See lattice.scm or symmetric.scm for more examples.
+;;; This only works for explicit edges. For more power, generate a stream of edges directly.
+;;; (Examples of this include the complete graph in symmetric.scm and the graphs in random.scm.)
 (define-syntax edges
   (syntax-rules ()
                 ((_ tail (args ...) ...)
@@ -28,6 +44,8 @@
   (syntax-rules ()
                 ((_ edges-stream)
                  (cons-stream 'edges edges-stream))))
+
+;;; Modifiers and accessors for edge streams
 (define edges->stream stream-cdr)
 (define edges->list (compose stream->list edges->stream))
 (define vertex-edges-stream (compose edges->stream vertex-edges))
@@ -35,6 +53,10 @@
 (define (set-vertex-edges-stream! vertex edges-stream)
   (set-vertex-edges! vertex (make-edges edges-stream)))
 
+;;; A (directed) edge consists of a tail vertex and a head vertex,
+;;; where the edges goes from the tail to the head.
+;;; In addition, edges can store other properties like weight and capacity (default 1).
+;;; For consistency with the vertex record, we have a graph field, but it isn't used.
 (define-structure (edge (keyword-constructor %make-edge))
                   tail
                   head
@@ -42,18 +64,21 @@
                   graph
                   (weight 1)
                   (capacity 1))
+
+;;; Printer for edge
 (set-record-type-unparser-method!
   rtd:edge
   (standard-unparser-method 'edge (lambda (obj port)
                                     (write-char #\  port)
                                     (write (edge-name obj) port))))
 
-;; This parses the arguments to create an edge.
-;; Examples:
-;; (make-edge a b 'edge) -> (%make-edge 'tail a 'head b 'name 'edge)
-;; (make-edge a b 'w 3 'c 7) -> (%make-edge 'tail a 'head b 'name [name] 'weight 3 'capacity 7)
-;; (make-edge a b 'c 7 'w 3) -> (%make-edge 'tail a 'head b 'name [name] 'weight 3 'capacity 7)
-;; (make-edge a b 'w 3 'name 'edge) -> (%make-edge 'tail a 'head b 'name 'edge 'weight 3)
+;;; This parses the arguments to create an edge.
+;;; The default name is a list containing the tail and head (prepended by '--).
+;;; Examples:
+;;;   (make-edge a b 'edge) -> (%make-edge 'tail a 'head b 'name 'edge)
+;;;   (make-edge a b 'w 3 'c 7) -> (%make-edge 'tail a 'head b 'name [name] 'weight 3 'capacity 7)
+;;;   (make-edge a b 'c 7 'w 3) -> (%make-edge 'tail a 'head b 'name [name] 'weight 3 'capacity 7)
+;;;   (make-edge a b 'w 3 'name 'edge) -> (%make-edge 'tail a 'head b 'name 'edge 'weight 3)
 (define (make-edge tail head . rest)
   (apply %make-edge
          (cons* 'tail tail 'head head
@@ -84,7 +109,7 @@
                              (parse (cdr fields)
                                     (cdr rest)))))))))
 
-;; Be careful. Adding or removing an edge from a vertex with infinite degree will not return.
+;;; Be careful. Adding or removing an edge from a vertex with infinite degree will not return.
 (define (add-edge! edge)
   (let ((tail (edge-tail edge)))
     (if (not (memq edge (vertex-edges-list tail)))
@@ -98,9 +123,10 @@
                                          (vertex-edges-stream tail))))
         (set-vertex-edges-stream! tail edges-stream)))))
 
-;; seq is a list of indices to trace edges.
-;; Use #f to choose randomly (must have finite edges)
-;; Random goes nowhere if the vertex has no edges.
+;;; Traverses edges by using the ith edge in the vertex's stream of edges.
+;;; seq is a list of indices to trace edges.
+;;; Use #f to choose randomly (must have finite edges)
+;;; Random goes nowhere if the vertex has no edges.
 (define (traverse vertex seq)
   (if (null? seq)
     vertex
@@ -113,8 +139,10 @@
                   (else vertex)))
               (cdr seq))))
 
-;; Traverse k edges randomly.
-;; Goes nowhere if no edges.
+;;; Traverse k edges randomly.
+;;; Goes nowhere if no edges.
+;;; This can also be defined in terms of traverse or traverse-random-weighted,
+;;; but is written here to demonstrate its simplicity.
 (define (traverse-random vertex #!optional k)
   (let ((k (if (default-object? k) 1 k))
         (edges-stream (vertex-edges-stream vertex)))
@@ -126,7 +154,7 @@
                                (random (stream-length edges-stream))))
         (-1+ k)))))
 
-;; Traverse k edges randomly in proportion to edge weights.
+;;; Traverse k edges randomly in proportion to edge weights.
 (define (traverse-random-weighted vertex #!optional k)
   (let ((k (if (default-object? k) 1 k)))
     (if (eq? 0 k)
@@ -145,10 +173,9 @@
                     sum))))
         (-1+ k)))))
 
-(define traverse-random traverse-random-weighted)
-
-;; f is a function to be applied to all vertices.
-;; The sum of f on all vertices is returned.
+;;; Perform a dfs on a graph, starting from vertex.
+;;; f is a function to be applied to all vertices.
+;;; The sum of f on all vertices is returned.
 (define ((graph-dfs f) vertex)
   (let ((done (make-eq-hash-table))
         (count 0))
@@ -163,6 +190,7 @@
     (dfs vertex)
     count))
 
+;;; Count the number of vertices or edges reachable from a vertex
 (define count-graph-vertices
   (graph-dfs (lambda (x) 1)))
 (define count-graph-edges

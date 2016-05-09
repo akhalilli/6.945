@@ -33,6 +33,9 @@
 			   (+ 1 (hash-table/get results result 0)))
 	  (loop results (- runs-left 1))))))
 
+#|
+
+;;; Run 10000 trials on a box 100 deep
 (let ((results (run-galton-box 10000 100)))
   (let loop ((i -25))
     (if (<= i 25)
@@ -40,6 +43,8 @@
   	  (display i) (display ": ") (display (hash-table/get results i 0))
 	  (newline)
 	  (loop (+ i 1))))))
+
+|#
 
 #|
 
