@@ -10,11 +10,6 @@
         count
         (iter (traverse-random vertex) (1+ count))))))
 
-(cover-time (make-complete 25))
-;Value: 65
-(cover-time (make-line 25))
-;Value: 310
-
 (define (make-lollipop n)
   (let ((clique (make-complete n))
         (line (make-line n)))
@@ -22,6 +17,11 @@
     (add-edge! (make-edge line clique))
     clique))
 
+#|
+(cover-time (make-complete 25))
+;Value: 65
+(cover-time (make-line 25))
+;Value: 310
 (cover-time (make-lollipop 25))
 ;Value: 13861
-
+|#

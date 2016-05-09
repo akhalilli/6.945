@@ -19,10 +19,11 @@
               (and limit (-1+ limit))
               (1+ count))))))
 
+#|
 (traverse-random (line 0) 500)
 ;Value: #[vertex 32]
-
 (reach (line 0) (line 5))
 ;Value: 65
 (reach (line 0) (line 20))
 ;Value: 940
+|#

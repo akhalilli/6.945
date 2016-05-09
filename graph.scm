@@ -113,8 +113,20 @@
                   (else vertex)))
               (cdr seq))))
 
-;; Traverse k edges randomly in proportion to edge weights.
+;; Traverse k edges randomly.
 ;; Goes nowhere if no edges.
+(define (traverse-random vertex #!optional k)
+  (let ((k (if (default-object? k) 1 k))
+        (edges-stream (vertex-edges-stream vertex)))
+    (if (or (eq? 0 k)
+            (null? edges-stream))
+      vertex
+      (traverse-random
+        (edge-head (stream-ref edges-stream
+                               (random (stream-length edges-stream))))
+        (-1+ k)))))
+
+;; Traverse k edges randomly in proportion to edge weights.
 (define (traverse-random-weighted vertex #!optional k)
   (let ((k (if (default-object? k) 1 k)))
     (if (eq? 0 k)
@@ -132,9 +144,8 @@
                     (if (> 1 (random (exact->inexact (/ sum weight)))) (edge-head edge) head)
                     sum))))
         (-1+ k)))))
-(define (traverse-random vertex #!optional k)
-  (let ((k (if (default-object? k) 1 k)))
-    (traverse-random-weighted vertex k)))
+
+(define traverse-random traverse-random-weighted)
 
 ;; f is a function to be applied to all vertices.
 ;; The sum of f on all vertices is returned.

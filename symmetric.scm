@@ -124,7 +124,7 @@
                                 ((vertex (map (lambda (q) (case (abs q) ((0) -1) ((1) (* phi q)) (else 0))) coords)))
                                 ((vertex (map (lambda (q) (case (abs q) ((0) 1) ((1) (* phi q)) (else 0))) coords))))
                          coords)))
-    (vertex '(0 1 2))))
+    (vertex `(0 1 ,phi))))
 
 (define dodecahedron
   (let ()
