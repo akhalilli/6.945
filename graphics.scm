@@ -56,10 +56,10 @@
         (sleep-current-thread 50)
         (iter (+ t rate))))))
 
-(define (draw-random-walk vertex proj #!optional sleep scale device)
+(define (draw-random-walk vertex proj #!optional scale sleep device)
   (let ((device (if (default-object? device) (make-graphics) device))
         (scale (if (default-object? scale) 1 scale))
-        (sleep (if (default-object? sleep) 50 sleep))
+        (sleep (if (default-object? sleep) 200 sleep))
         (vertices (make-eq-hash-table))
         (edges (make-equal-hash-table)))
     (define (hash-table/get-edge edge)
@@ -128,8 +128,8 @@
 
 #|
 (draw-graph (make-lollipop 12) lollipop-plot (make-graphics) 4)
-(draw-random-walk (make-circle 12) circle-plot 200 1.2)
-(draw-random-walk (make-complete 12) circle-plot 200 1.2)
-(draw-random-walk (make-line 12) line-plot 200 4)
-(draw-random-walk (make-lollipop 12) lollipop-plot 200 4)
+(draw-random-walk (make-circle 12) circle-plot 1.2)
+(draw-random-walk (make-complete 12) circle-plot 1.2)
+(draw-random-walk (make-line 12) line-plot 4)
+(draw-random-walk (make-lollipop 12) lollipop-plot 4)
 |#
