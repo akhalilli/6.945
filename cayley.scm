@@ -12,11 +12,11 @@
     (set-vertex-edges!
       vertex
       (make-edges
-       (stream-map
-        (lambda (s)
-	  (make-edge vertex
-		     (cayley (group-* element s) generators group-*)))
-	(list->stream generators))))
+        (stream-map
+          (lambda (s)
+            (make-edge vertex
+                       (cayley (group-* element s) generators group-*)))
+          (list->stream generators))))
     vertex))
 
 ;;; Cyclic groups

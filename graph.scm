@@ -1,7 +1,7 @@
 ;;;; Vertex and edge structures and creation
 
 ;;; A vertex consists of a stream of edges (prepended so that the first edge is also delayed)
-;;; and an identifier/name. The identifier is the argement in the definition of the procedure
+;;; and an identifier/name. The identifier is the argument in the definition of the procedure
 ;;; creating a vertex. The name field in the record is used mostly for printing purposes.
 ;;; The graph field is sometimes used to help position a vertex when displaying it graphically.
 (define-structure (vertex (constructor %make-vertex))
